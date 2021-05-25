@@ -24,8 +24,32 @@ contract CryptoKitties is IERC721, Ownable {
 
     mapping (uint256 => address) public kittyIndexToOwner;
     mapping (address => uint256) ownershipTokenCount;
+    mapping (uint256 => address) public kittyIndexToApproved;
+    mapping (address => mapping (address => bool)) private _operatorApprovals;
 
     uint256 gen0Counter;
+
+    function approve(address _to, uint256 _tokenId) public override {
+        require(_owns(msg.sender, _tokenId));
+
+        _approve(_tokenId, _to);
+        emit Approval(msg.sender, _to, _tokenId);
+    }
+
+    function setApprovalForAll(address operator, bool approved) public override {
+        require(operator != msg.sender);
+
+        _operatorApprovals[msg.sender][operator] = approved;
+        emit ApprovalForAll(msg.sender, operator, approved);
+    }
+    
+    function getApproved(uint256 tokenId) public view override returns (address) {
+        require(tokenId < kitties.length); // Token must exist
+        return kittyIndexToApproved[tokenId];
+    }
+    function isApprovedForAll(address owner, address operator) public view override returns (bool) {
+        return _operatorApprovals[owner][operator];
+    }
 
     function getKitty(uint256 _id) external view returns (uint256 genes, uint256 birthTime, uint256 momId, uint256 dadId, uint256 generation) {
         Kitty storage kitty = kitties[_id];
@@ -89,6 +113,7 @@ contract CryptoKitties is IERC721, Ownable {
 
         if (_from != address(0)) {
             ownershipTokenCount[_from]--;
+            delete kittyIndexToApproved[_tokenId];
         }
 
         // Emit the transfer event
@@ -97,5 +122,9 @@ contract CryptoKitties is IERC721, Ownable {
 
     function _owns(address _claimant, uint256 _tokenId) internal view returns (bool) {
         return kittyIndexToOwner[_tokenId] == _claimant;
+    }
+
+    function _approve(uint256 _tokenId, address _approved) internal {
+        kittyIndexToApproved[_tokenId] = _approved;
     }
 }
