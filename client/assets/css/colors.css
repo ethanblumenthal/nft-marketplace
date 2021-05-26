@@ -1,56 +1,42 @@
-
-
-
- .black {
-
-  color:#000000;
- }
-
-
- 
- .c-red {
-   color:#db4343;
- }
-
- 
-.blue {
-  color:#2E91FC;
-
+.black {
+  color: #000000;
 }
 
+.c-red {
+  color: #db4343;
+}
 
- .c-white {
-  color:#ffffff;
- }
- 
- .light-c {
-  color: #71748D;
- }
-  /* backgrounds */
+.blue {
+  color: #2e91fc;
+}
 
-  .bg-blue {
-    background-color:#2E91FC;
-    color:#ffffff;
-    }
- 
+.c-white {
+  color: #ffffff;
+}
 
- .bg-light-grey {
+.light-c {
+  color: #71748d;
+}
+/* backgrounds */
+
+.bg-blue {
+  background-color: #2e91fc;
+  color: #ffffff;
+}
+
+.bg-light-grey {
   background-color: #f2f2f2f2;
-} 
+}
 
-  .bg-white {
-  
-    background-color: #fff;
+.bg-white {
+  background-color: #fff;
+}
 
-  }
+/* GRADIENT */
 
-  /* GRADIENT */
-
-   .blue-gr {
-
-    background-image: linear-gradient(to right,#008ED4, #45a6d3);
-   }
-   .black-gr {
-
-    background-image: linear-gradient(to right,#1b1b1b, #444444);
-   }
+.blue-gr {
+  background-image: linear-gradient(to right, #008ed4, #45a6d3);
+}
+.black-gr {
+  background-image: linear-gradient(to right, #1b1b1b, #444444);
+}

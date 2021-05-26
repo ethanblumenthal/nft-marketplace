@@ -2,7 +2,7 @@ var web3 = new Web3(Web3.givenProvider);
 
 var instance;
 var user;
-var contractAddress = '0x01aB0Cd2A3f72F8Fa2b76DC327F6270cCAEA152F';
+var contractAddress = '0x6Fd48F5D62EaE22EF6d27466ef2ea642a7B26557';
 
 $(document).ready(function () {
   window.ethereum.enable().then(function (accounts) {
@@ -40,6 +40,45 @@ $(document).ready(function () {
   });
 });
 
+// Get kittues for breeding that are not selected
+async function breedKitties(gender) {
+  var arrayId = await instance.methods.getKittyByOwner(user).call();
+  for (i = 0; i < arrayId.length; i++) {
+    appendBreed(arrayId[i], gender);
+  }
+}
+
+// Appending cats to breed selection
+async function appendBreed(id, gender) {
+  var kitty = await instance.methods.getKitty(id).call();
+  breedAppend(kitty[0], id, kitty.generation, gender);
+}
+
+// Appending cats to breed selection
+async function breed(dadId, momId) {
+  try {
+    var newKitty = await instance.methods.breed(dadId, momId).send();
+    console.log(newKitty);
+    setTimeout(() => {
+      go_to('catalogue.html');
+    }, 2000);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Appending cats for catalog
+async function appendKitty(id) {
+  var kitty = await instance.methods.getKitty(id).call();
+  appendCat(kitty[0], id, kitty['generation']);
+}
+
+async function singleKitty() {
+  var id = get_variables().catId;
+  var kitty = await instance.methods.getKitty(id).call();
+  singleCat(kitty[0], id, kitty['generation']);
+}
+
 function createKitty() {
   var dnaStr = getDna();
   instance.methods.createKittyGen0(dnaStr).send({}, function (error, txHash) {
@@ -58,7 +97,15 @@ async function getKitties() {
   }
   for (i = 0; i < arrayId.length; i++) {
     kitty = await instance.methods.getKitty(arrayId[i]).call();
-    appendCat(kitty[0], i);
+    appendCat(kitty[0], i, kitty.generation);
   }
   console.log(kitty);
+}
+
+function go_to(url) {
+  window.location.href = url;
+}
+
+function empty(str) {
+  return !str || 0 === str.length;
 }
