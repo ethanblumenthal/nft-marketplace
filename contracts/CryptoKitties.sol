@@ -2,14 +2,17 @@
 pragma solidity 0.8.4;
 
 import "./IERC721.sol";
+import "./IERC721Receiver.sol";
 import "./Ownable.sol";
 
-contract CryptoKitties is IERC721, Ownable {
+abstract contract CryptoKitties is IERC721, Ownable {
 
     uint256 public constant CREATION_LIMIT_GEN0 = 10;
     string public override constant name = "CryptoKitties";
     string public override constant symbol = "CK";
 
+    bytes4 internal constant MAGIC_ERC721_RECEIVED = bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    
     event Birth(address owner, uint256 kittenId, uint256 momId, uint256 dadId, uint256 genes);
 
     struct Kitty {
@@ -28,6 +31,11 @@ contract CryptoKitties is IERC721, Ownable {
     mapping (address => mapping (address => bool)) private _operatorApprovals;
 
     uint256 gen0Counter;
+
+    function _safeTransfer(address _from, address _to, uint256 _tokenId, bytes memory _data) internal {
+        _transfer(_from, _to, _tokenId);
+        require(_checkERC721Support(_from, _to, _tokenId, _data));
+    }
 
     function approve(address _to, uint256 _tokenId) public override {
         require(_owns(msg.sender, _tokenId));
@@ -126,5 +134,26 @@ contract CryptoKitties is IERC721, Ownable {
 
     function _approve(uint256 _tokenId, address _approved) internal {
         kittyIndexToApproved[_tokenId] = _approved;
+    }
+
+    function _approvedFor(address _claimant, uint256 _tokenId) internal view returns (bool) {
+        return kittyIndexToApproved[_tokenId] == _claimant;
+    }
+
+    function _checkERC721Support(address _from, address _to, uint256 _tokenId, bytes memory _data) internal returns (bool) {
+        if( !_isContract(_to) ){
+            return true;
+        }
+
+        bytes4 returnData = IERC721Receiver(_to).onERC721Received(msg.sender, _from, _tokenId, _data);
+        return returnData == MAGIC_ERC721_RECEIVED;
+    }
+
+    function _isContract(address _to) internal view returns (bool) {
+        uint32 size;
+        assembly{
+            size := extcodesize(_to)
+        }
+        return size > 0;
     }
 }
