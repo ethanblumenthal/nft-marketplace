@@ -53,6 +53,31 @@ abstract contract CryptoKitties is IERC721, Ownable {
 
     uint256 gen0Counter;
 
+    function breed(uint256 _dadId, uint256 _momId) public returns (uint256){
+        require(_owns(msg.sender, _dadId), "The user doesn't own the token");
+        require(_owns(msg.sender, _momId), "The user doesn't own the token");
+
+        ( uint256 dadDna,,,,uint256 DadGeneration ) = getKitty(_dadId);
+
+        ( uint256 momDna,,,,uint256 MomGeneration ) = getKitty(_momId);
+        
+        uint256 newDna = _mixDna(dadDna, momDna);
+
+        uint256 kidGen = 0;
+        if (DadGeneration < MomGeneration) {
+            kidGen = MomGeneration + 1;
+            kidGen /= 2;
+        } else if (DadGeneration > MomGeneration) {
+            kidGen = DadGeneration + 1;
+            kidGen /= 2;
+        } else {
+            kidGen = MomGeneration + 1;
+        }
+
+        _createKitty(_momId, _dadId, kidGen, newDna, msg.sender);
+
+    }
+
     function supportsInterface(bytes4 _interfaceId) external view returns (bool) {
         return (_interfaceId == _INTERFACE_ID_ERC721 || _interfaceId == _INTERFACE_ID_ERC165);
     }
@@ -98,7 +123,7 @@ abstract contract CryptoKitties is IERC721, Ownable {
         return _operatorApprovals[owner][operator];
     }
 
-    function getKitty(uint256 _id) external view returns (uint256 genes, uint256 birthTime, uint256 momId, uint256 dadId, uint256 generation) {
+    function getKitty(uint256 _id) public view returns (uint256 genes, uint256 birthTime, uint256 momId, uint256 dadId, uint256 generation) {
         Kitty storage kitty = kitties[_id];
 
         genes = uint256(kitty.genes);
@@ -203,5 +228,17 @@ abstract contract CryptoKitties is IERC721, Ownable {
         
         // Spender is from OR spender is approved for tokenId OR spender is operator for from
         return (_spender == _from || _approvedFor(_spender, _tokenId) || isApprovedForAll(_from, _spender));
+    }
+
+ function _mixDna(uint256 _dadDna, uint256 _momDna) internal returns (uint256) {
+        // dadDna: 11 22 33 44 55 66 77 88 
+        // momDna: 88 77 66 55 44 33 22 11
+
+        uint256 firstHalf = _dadDna / 100000000; // 11 22 33 44
+        uint256 secondHalf = _momDna % 100000000; // 88 77 66 55
+        
+        uint256 newDna = firstHalf * 100000000;
+        newDna = newDna + secondHalf; // 11 22 33 44 88 77 66 55
+        return newDna;
     }
 }
