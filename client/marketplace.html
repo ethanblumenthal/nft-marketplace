@@ -23,33 +23,35 @@
     <div id="menu"></div>
     >
     <!-- End menu -->
+    <div class="animation-wrapper">
+      <div class="particle particle-1"></div>
+    </div>
+
     <div class="header" align="center">
       <div class="container">
-        <h2 class="menu-title">Catalogue</h2>
+        <h2 class="menu-title">Marketplace</h2>
       </div>
     </div>
 
     <div class="container middleBox">
-      <button class="btn red-btn mb-3 mt-3" onclick="go_to('breed.html')">
-        Breed
-      </button>
-      <br />
       <div class="row" id="catsDiv"></div>
+
+      <div class="row" id="ownersCatsDiv hidden"></div>
     </div>
 
     <footer align="left">
       <p>Ethan Blumenthal</p>
     </footer>
-
-    <script>
-      // when page load create the catalog
-      $(document).ready(function () {
-        setTimeout(() => {
-          getKitties();
-        }, 1000);
-      });
-    </script>
   </body>
+
+  <script>
+    // when page load create the catalog
+    $(document).ready(function () {
+      setTimeout(() => {
+        initMarketplace();
+      }, 1000);
+    });
+  </script>
 
   <script src="assets/js/colors.js"></script>
   <script src="assets/js/catalogue/buildCat.js"></script>
