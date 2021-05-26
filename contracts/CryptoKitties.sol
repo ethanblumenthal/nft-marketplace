@@ -12,7 +12,7 @@ abstract contract CryptoKitties is IERC721, Ownable {
     string public override constant symbol = "CK";
 
     bytes4 internal constant MAGIC_ERC721_RECEIVED = bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
-    
+
     event Birth(address owner, uint256 kittenId, uint256 momId, uint256 dadId, uint256 genes);
 
     struct Kitty {
@@ -32,9 +32,23 @@ abstract contract CryptoKitties is IERC721, Ownable {
 
     uint256 gen0Counter;
 
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId) public override {
+        safeTransferFrom(_from, _to, _tokenId, "");
+    }
+
+    function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes memory _data) public override {
+        require( _isApprovedOrOwner(msg.sender, _from, _to, _tokenId) );
+        _safeTransfer(_from, _to, _tokenId, _data);
+    }
+
     function _safeTransfer(address _from, address _to, uint256 _tokenId, bytes memory _data) internal {
-        _transfer(_from, _to, _tokenId);
         require(_checkERC721Support(_from, _to, _tokenId, _data));
+        _transfer(_from, _to, _tokenId);
+    }
+
+    function transferFrom(address _from, address _to,uint256 _tokenId) public override {
+        require( _isApprovedOrOwner(msg.sender, _from, _to, _tokenId) );
+        _transfer(_from, _to, _tokenId);
     }
 
     function approve(address _to, uint256 _tokenId) public override {
@@ -155,5 +169,14 @@ abstract contract CryptoKitties is IERC721, Ownable {
             size := extcodesize(_to)
         }
         return size > 0;
+    }
+
+    function _isApprovedOrOwner(address _spender, address _from, address _to, uint256 _tokenId) internal view returns (bool) {
+        require(_tokenId < kitties.length); // Token must exist
+        require(_to != address(0)); // TO address is not zero address
+        require(_owns(_from, _tokenId)); // From owns the token
+        
+        // Spender is from OR spender is approved for tokenId OR spender is operator for from
+        return (_spender == _from || _approvedFor(_spender, _tokenId) || isApprovedForAll(_from, _spender));
     }
 }
